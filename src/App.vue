@@ -2,6 +2,8 @@
   <nav>
     <router-link to="/">Home</router-link> |
     <router-link to="/about">About</router-link>
+    <router-link to="/token">Generar Token</router-link>
+    <router-link to="/vehiculo">Vehículos</router-link>
   </nav>
   <router-view/>
 </template>
