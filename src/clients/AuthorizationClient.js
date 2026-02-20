@@ -1,15 +1,13 @@
 import axios from "axios";
 
-const URL = "http://localhost:8082/auth";
+const URL = "http://localhost:8083";
 
 const getToken = async (username, password, rol) => {
   try {
-    const response = await axios.get(`${URL}/token`, {
-      params: {
-        user: username,
-        password: password,
-        rol: rol
-      }
+    const response = await axios.post(`${URL}/token`, {
+      user: username,
+      password: password,
+      role: rol
     });
     return response.data;
   } catch (error) {

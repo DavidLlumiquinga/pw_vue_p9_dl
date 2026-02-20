@@ -75,16 +75,27 @@ export default {
   methods: {
     async generarToken() {
       if (!this.validarFormulario()) {
+        console.warn('Por favor complete todos los campos');
         return;
       }
 
-      const token = await getTokenFachada(
-        this.formulario.usuario,
-        this.formulario.password,
-        this.formulario.rol
-      );
-      
-      this.formulario.token = token;
+      try {
+        const response = await getTokenFachada(
+          this.formulario.usuario,
+          this.formulario.password,
+          this.formulario.rol
+        );
+        
+        // El backend devuelve un objeto TokenResponse con accessToken
+        this.formulario.token = response.accessToken || response;
+        
+        // Guardar el token en localStorage para usarlo en otras páginas
+        localStorage.setItem('token', this.formulario.token);
+        
+        console.log('Token generado exitosamente');
+      } catch (error) {
+        console.error('Error al generar token:', error.response?.data?.error || 'Credenciales inválidas');
+      }
     },
     validarFormulario() {
       if (!this.formulario.usuario.trim()) return false;

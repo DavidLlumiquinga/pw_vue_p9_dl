@@ -47,22 +47,35 @@ export default {
   methods: {
     async cargarVehiculos() {
       this.cargandoInicial = true;
+      this.error = '';
 
-      const respuesta = await fachadaSeleccionarTodos();
-      this.vehiculos = respuesta || [];
-      console.log('Vehículos cargados:', this.vehiculos);
+      try {
+        const respuesta = await fachadaSeleccionarTodos();
+        this.vehiculos = respuesta || [];
+        console.log('✅ Vehículos cargados:', this.vehiculos);
+      } catch (error) {
+        console.error('❌ Error al cargar vehículos:', error);
+        this.error = 'No se pudo conectar con el servidor. Asegúrate de que el API esté corriendo.';
+        this.vehiculos = [];
+      } finally {
+        this.cargandoInicial = false;
+      }
+    },
+    async agregarVehiculo(nuevoVehiculo) {
+      console.log('📝 Vehículo guardado recibido:', nuevoVehiculo);
       
-      this.cargandoInicial = false;
+      // Recargar la lista completa desde el servidor para asegurar sincronización
+      await this.cargarVehiculos();
+      
+      console.log('📊 Total de vehículos después de guardar:', this.vehiculos.length);
     },
-    agregarVehiculo(nuevoVehiculo) {
-      // Agregar el nuevo vehículo a la lista
-      this.vehiculos.push(nuevoVehiculo);
-      console.log('Vehículo agregado a la tabla:', nuevoVehiculo);
-      console.log('Total de vehículos:', this.vehiculos.length);
-    },
-    eliminarVehiculo(indice) {
-      this.vehiculos.splice(indice, 1);
-      console.log('Total de vehículos:', this.vehiculos.length);
+    async eliminarVehiculo(indice) {
+      console.log('🗑️ Eliminando vehículo en índice:', indice);
+      
+      // Recargar la lista completa después de eliminar
+      await this.cargarVehiculos();
+      
+      console.log('📊 Total de vehículos después de eliminar:', this.vehiculos.length);
     }
   }
 }

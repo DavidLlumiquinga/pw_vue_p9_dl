@@ -98,28 +98,33 @@ export default {
   methods: {
     async guardarVehiculo() {
       if (!this.validarFormulario()) {
+        console.warn('Por favor complete todos los campos');
         return;
       }
 
-      const datosVehiculo = {
-        marca: this.formulario.marca,
-        modelo: this.formulario.modelo,
-        chasis: this.formulario.chasis,
-        fechaMatricula: this.formulario.fechaMatricula,
-        fechaFabricacion: this.formulario.fechaFabricacion
-      };
+      try {
+        // Convertir las fechas al formato LocalDateTime para Java
+        const datosVehiculo = {
+          marca: this.formulario.marca,
+          modelo: this.formulario.modelo,
+          chasis: this.formulario.chasis,
+          fechaMatricula: this.convertirALocalDateTime(this.formulario.fechaMatricula),
+          fechaFabricacion: this.convertirALocalDateTime(this.formulario.fechaFabricacion)
+        };
 
-      localStorage.setItem('token', this.formulario.token);
-      
-      const respuesta = await fachadaGuardar(datosVehiculo);
-      console.log('Vehículo guardado:', respuesta);
-      
-      this.$emit('vehiculo-guardado', {
-        ...datosVehiculo,
-        id: respuesta.id || Date.now()
-      });
-      
-      this.limpiarFormulario();
+        // Guardar el token en localStorage antes de hacer la petición
+        localStorage.setItem('token', this.formulario.token);
+        
+        const respuesta = await fachadaGuardar(datosVehiculo);
+        console.log('Vehiculo guardado:', respuesta);
+        
+        // Emitir evento con el vehículo guardado (incluyendo el ID del backend)
+        this.$emit('vehiculo-guardado', respuesta);
+        
+        this.limpiarFormulario();
+      } catch (error) {
+        console.error('Error al guardar el vehiculo:', error.response?.data?.error || error.message);
+      }
     },
     validarFormulario() {
       if (!this.formulario.token.trim()) return false;
@@ -131,11 +136,17 @@ export default {
       return true;
     },
     limpiarFormulario() {
+      // No limpiar el token, solo los datos del vehículo
       this.formulario.marca = '';
       this.formulario.modelo = '';
       this.formulario.chasis = '';
       this.formulario.fechaMatricula = '';
       this.formulario.fechaFabricacion = '';
+    },
+    convertirALocalDateTime(fecha) {
+      // Convertir fecha YYYY-MM-DD a LocalDateTime formato ISO
+      // Java espera formato: 2024-01-15T00:00:00
+      return fecha + 'T00:00:00';
     }
   }
 }

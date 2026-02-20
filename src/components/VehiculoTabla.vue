@@ -13,15 +13,17 @@
             <tr>
               <th>ID</th>
               <th>Marca</th>
+              <th>Modelo</th>
               <th>Chasis</th>
               <th>Fecha matrícula</th>
               <th>Acción</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(vehiculo, index) in vehiculos" :key="index">
+            <tr v-for="(vehiculo, index) in vehiculos" :key="vehiculo.id || index">
               <td>{{ vehiculo.id || index + 1 }}</td>
               <td>{{ vehiculo.marca }}</td>
+              <td>{{ vehiculo.modelo }}</td>
               <td>{{ vehiculo.chasis }}</td>
               <td>{{ formatoFecha(vehiculo.fechaMatricula) }}</td>
               <td>
@@ -71,25 +73,25 @@ export default {
   methods: {
     async borrarVehiculo(index) {
       const vehiculo = this.vehiculos[index];
-
+      
       this.cargandoBorrar[index] = true;
       this.errorBorrar = '';
 
       try {
         const token = this.token || localStorage.getItem('token');
         
-        if (token) {
+        if (vehiculo.id && token) {
           // Si tenemos el vehículo con ID, hacemos la eliminación en la API
-          if (vehiculo.id) {
-            await fachadaEliminar(vehiculo.id);
-          }
+          await fachadaEliminar(vehiculo.id);
         }
 
         // Emitimos el evento para que el padre actualice la lista
         this.$emit('vehiculo-eliminado', index);
+        
+        console.log('Vehiculo eliminado exitosamente');
       } catch (error) {
-        this.errorBorrar = 'Error al borrar el vehículo: ' + (error.response?.data?.message || error.message);
-        console.error('Error:', error);
+        this.errorBorrar = 'Error al borrar el vehiculo: ' + (error.response?.data?.message || error.message);
+        console.error('Error al borrar:', this.errorBorrar);
       } finally {
         this.cargandoBorrar[index] = false;
       }
@@ -97,8 +99,17 @@ export default {
     formatoFecha(fecha) {
       if (!fecha) return '---';
       try {
+        // Si la fecha viene en formato LocalDateTime (2024-01-15T00:00:00)
+        // la convertimos a un formato legible
         const date = new Date(fecha);
-        return date.toLocaleDateString('es-ES');
+        if (isNaN(date.getTime())) {
+          return fecha;
+        }
+        return date.toLocaleDateString('es-ES', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric'
+        });
       } catch (e) {
         return fecha;
       }

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const URL = "http://localhost:8082/concecionario/api/v1.0/vehiculo";
+const URL = "http://localhost:8081/concecionario/api/v1.0/vehiculos";
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
